@@ -1,0 +1,15 @@
+body {
+	font-size: large;
+	background-color: #433A3F;
+}
+div {
+	border-bottom: 1px solid #FFFFFF;
+}
+p, td {
+	color: #FFFFFF;
+}
+
+td {
+	padding-left: 10px;
+	padding-right: 10px;
+}
