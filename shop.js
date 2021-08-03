@@ -1,15 +1,29 @@
 var shop =
 {
 	cash: 10,
+	cart_total: 0,
+	update_cart: function(input)
+	{
+		this.cart_total = 0;
+		for (let i = 0; i < this.wares.length; i += 1)
+		{
+			var tr = $('#shopTable tr')[i + 1];
+			var ware = eval($(tr).data('value'));
+			var cost = ware.cost;
+			var count = tr.children[3].children[0].value;
+			this.cart_total += cost*count;
+		}
+		$('#totalTD').text("$" + this.cart_total);
+	},
 	setup: function()
 	{
 		$('#statusP').text('You have $' + this.cash + ' to spend.');
 		for (let i = 0; i < this.wares.length; i += 1)
 		{
-			var ware_row = `<tr value='this.wares[{i}]'><td>${this.wares[i].name}</td><td>${this.wares[i].desc}</td><td>${"$"+this.wares[i].cost}</td><td></td></tr>`;
+			var ware_row = `<tr data-value=this.wares[${i}]><td>${this.wares[i].name}</td><td>${this.wares[i].desc}</td><td>${"$"+this.wares[i].cost}</td><td><input type="number" min=0 value=0 onchange=\'shop.update_cart(this)\'></td></tr>`;
 			$("#shopTable").find('tbody').append(ware_row);
 		}
-		var purchase_row = '<tr><td></td><td style=\'text-align:right\'>Total:</td><td></td><td><button>Purchase</button></td></tr>';
+		var purchase_row = '<tr><td></td><td style=\'text-align:right\'>Total:</td><td id=\'totalTD\'>$0</td><td><button>Purchase/Continue</button></td></tr>';
 		$("#shopTable").find('tbody').append(purchase_row);
 	},
 	wares: [
