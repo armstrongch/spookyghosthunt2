@@ -5,10 +5,6 @@ function new_monster(type)
 	monster.type = type;
 	monster.max_health = 5;
 	monster.health = monster.max_health;
-	monster.get_status = function()
-	{
-		return "";
-	}
 	return monster;
 }
 
