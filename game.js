@@ -18,6 +18,9 @@ var game =
 			case "shop":
 				shop.setup();
 				break;
+			case "battle":
+				battle.setup();
+				break;
 			default:
 				break;
 		}
