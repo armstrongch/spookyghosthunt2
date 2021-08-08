@@ -5,6 +5,14 @@ function new_monster(type)
 	monster.type = type;
 	monster.max_health = 5;
 	monster.health = monster.max_health;
+	if ((type == "ghost") || (type == "skeleton") || (type == "vampire"))
+	{
+		monster.undead = true;
+	}
+	else
+	{
+		monster.undead = false;
+	}
 	return monster;
 }
 

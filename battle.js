@@ -15,6 +15,11 @@ var battle =
 			this.monster.type.charAt(0).toUpperCase() + this.monster.type.slice(1) //capitalize first letter of monster's name
 			+ " health: " + this.monster.health + " / " + this.monster.max_health);
 		
+		if (this.monster.undead)
+		{
+			$('#monsterStatusP').text($('#monsterStatusP').text() + " (undead)");
+		}
+		
 		for (let i = 0; i < player.items.length; i += 1)
 		{
 			var move_row = `<tr data-value=player.items[${i}]><td>${player.items[i].name}</td><td>${player.items[i].desc}</td>` + 

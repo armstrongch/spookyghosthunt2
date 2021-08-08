@@ -52,76 +52,104 @@ var shop =
 		{
 			name: "sword",
 			desc: "deal 1 damage every turn",
-			cost: 3
+			cost: 3,
+			use: function() {
+				battle.monster.health -= 1;
+			}
 		},
 		{
 			name: "rock",
 			desc: "deal 3 damage once",
-			cost: 2
+			cost: 2,
+			use: function() {
+				battle.monster.health -= 3;
+				player.remove_item(this.name);
+			}
 		},
 		{
 			name: "shield",
 			desc: "prevent a lethal monster attack, once",
-			cost: 1
+			cost: 1,
+			passive: true,
 		},
 		{
 			name: "armor",
 			desc: "reduce monster damage by 1",
-			cost: 3
+			cost: 3,
+			passive: true,
 		},
 		{
 			name: "cross",
 			desc: "deal 1 damage to undead monsters every turn",
-			cost: 2
+			cost: 2,
+			use: function() {
+				if (battle.monster.undead)
+				{
+						battle.monster.health -= 1;
+				}	
+			}
 		},
 		{
 			name: "holy water",
 			desc: "deal 3 damage to an undead monster, once",
-			cost: 1
+			cost: 1,
+			use: function() {
+				if (battle.monster.undead)
+				{
+					battle.monster.health -= 3;
+					player.remove_item(this.name);
+				}	
+			}
 		},
 		{
 			name: "metal detector",
 			desc: "gain $1 every time a monster is defeated",
-			cost: 5
+			cost: 5,
+			passive: true
 		},
 		{
 			name: "investment portfolio",
 			desc: "gain $1 every turn",
-			cost: 8
+			cost: 8,
+			use: function () {
+				shop.cash += 1;
+			}
 		},
 		{
 			name: "chainmail",
 			desc: "ignore the first monster attack of every battle",
-			cost: 10
+			cost: 10,
+			single_use: false
 		},
 		{
 			name: "transformation potion",
 			desc: "transform a monster into a different type of monster, once",
-			cost: 1
+			cost: 1,
+			single_use: true
 		},
 		{
 			name: "healthcare",
 			desc: "pay $5 to ignore the next monster attack",
 			cost: 2,
-			stock: 1
+			single_use: false
 		},
 		{
 			name: "big sword",
 			desc: "deal 2 damage every turn",
 			cost: 5,
-			stock: 1
+			single_use: false
 		},
 		{
 			name: "huge sword",
 			desc: "deal 3 damage every turn",
 			cost: 7,
-			stock: 1
+			single_use: false
 		},
 		{
 			name: "truly enormous sword",
 			desc: "deal 4 damage every turn",
 			cost: 9,
-			stock: 1
+			single_use: false
 		}
 	]
 };
