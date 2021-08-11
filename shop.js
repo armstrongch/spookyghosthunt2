@@ -11,7 +11,11 @@ var shop =
 			this.cash -= this.cart_total;
 			for (let i = 0; i < this.cart_items.length; i += 1)
 			{
-				player.items.push(this.cart_items[i]);
+				player.items.push(resources.clone_object(this.cart_items[i]));
+			}
+			for (let i = 0; i < player.items.length; i += 1)
+			{
+				player.items[i].remove_me = false;
 			}
 			game.set_state("battle");
 		}
@@ -38,6 +42,7 @@ var shop =
 	setup: function()
 	{
 		$('#statusP').text('You have $' + this.cash + ' to spend.');
+		$("#shopTable").find('tbody').html('');
 		for (let i = 0; i < this.wares.length; i += 1)
 		{
 			var ware_row = `<tr data-value=this.wares[${i}]><td>${this.wares[i].name}</td><td>${this.wares[i].desc}</td>` + 
@@ -53,39 +58,70 @@ var shop =
 			name: "sword",
 			desc: "deal 1 damage every turn",
 			cost: 3,
-			use: function() {
+			type: "player_turn_end",
+			action: function() {
 				battle.monster.health -= 1;
+				this.status_text = "Your sword deals 1 damage!";
 			}
 		},
 		{
 			name: "rock",
 			desc: "deal 3 damage once",
 			cost: 2,
-			use: function() {
+			type: "player_turn_end",
+			action: function() {
 				battle.monster.health -= 3;
-				player.remove_item(this.name);
+				this.remove_me = true;
+				this.status_text = "Your rock deals 3 damage!";
 			}
 		},
 		{
 			name: "shield",
 			desc: "prevent a lethal monster attack, once",
 			cost: 1,
-			passive: true,
+			type: "monster_turn_end",
+			action: function() {
+				if (battle.monster.attack_damage > player.health)
+				{
+					this.status_text = "Your shield saves your life, blocking " + battle.monster.attack_damage + " damage!";
+					battle.monster.attack_damage = 0;
+					this.remove_me = true;
+					
+				}
+				else
+				{
+					this.status_text = "Your shield remains unused.";
+				}
+			}
 		},
 		{
 			name: "armor",
 			desc: "reduce monster damage by 1",
 			cost: 3,
-			passive: true,
+			type: "monster_turn_end",
+			action: function() {
+				if (battle.monster.attack_damage >= 1)
+				{
+					this.status_text = "Your armor reduces the monster's attack damage by 1!";
+					battle.monster.attack_damage -= 1;
+				}
+				else
+				{
+					this.status_text = "Your armor remains unused.";
+				}
+			},
 		},
 		{
 			name: "cross",
 			desc: "deal 1 damage to undead monsters every turn",
 			cost: 2,
-			use: function() {
+			type: "player_turn_end",
+			action: function() {
+				this.status_text = "";
 				if (battle.monster.undead)
 				{
-						battle.monster.health -= 1;
+					battle.monster.health -= 1;
+					this.status_text = "Your cross deals 1 damage.";
 				}	
 			}
 		},
@@ -93,11 +129,14 @@ var shop =
 			name: "holy water",
 			desc: "deal 3 damage to an undead monster, once",
 			cost: 1,
-			use: function() {
+			type: "player_turn_end",
+			action: function() {
+				this.status_text = "";
 				if (battle.monster.undead)
 				{
 					battle.monster.health -= 3;
-					player.remove_item(this.name);
+					this.remove_me = true;
+					this.status_text = "Your holy water deals 3 damage.";
 				}	
 			}
 		},
@@ -105,51 +144,105 @@ var shop =
 			name: "metal detector",
 			desc: "gain $1 every time a monster is defeated",
 			cost: 5,
-			passive: true
+			type: "battle_end",
+			action: function() {
+				shop.cash += 1;
+				this.status_text = "Your metal detector reveals $1.";
+			}
 		},
 		{
 			name: "investment portfolio",
 			desc: "gain $1 every turn",
 			cost: 8,
-			use: function () {
+			type: "player_turn_end",
+			action: function () {
 				shop.cash += 1;
+				this.status_text = "Your investment portfolio yields $1.";
 			}
 		},
 		{
 			name: "chainmail",
 			desc: "ignore the first monster attack of every battle",
 			cost: 10,
-			single_use: false
+			type: "monster_turn_end",
+			action: function() {
+				this.status_text = "";
+				if (!battle.monster.has_attacked)
+				{
+					if (battle.monster.attack_damage > 0)
+					{
+						this.status_text = "Your chainmail blocks " + battle.monster.attack_damage + " damage!";
+						battle.monster.attack_damage = 0;
+					}
+					else
+					{
+						this.status_text = "Your chainmail remains unused.";
+					}
+				}
+			}
 		},
 		{
 			name: "transformation potion",
 			desc: "transform a monster into a different type of monster, once",
 			cost: 1,
-			single_use: true
+			type: "player_turn_end",
+			action: function() {
+				var old_monster_type = battle.monster.type;
+				while(battle.monster.type == old_monster_type)
+				{
+					battle.monster = monster_factory.new_random_monster();
+				}
+				this.remove_me = true;
+				this.status_text = "Your potion transforms the monster!";
+			}
 		},
 		{
 			name: "healthcare",
 			desc: "pay $5 to ignore the next monster attack",
 			cost: 2,
-			single_use: false
+			type: "monster_turn_end",
+			action: function() {
+				this.status_text = "";
+				if (battle.monster.attack_damage > 0)
+				{
+					if (shop.cash >= 5)
+					{
+						battle.monster.attack_damage = 0;
+						shop.cash -= 5;
+						this.status_text = "Your healthcare stops the monster's attack! You are billed $5.";
+					}
+				}
+			}
 		},
 		{
 			name: "big sword",
 			desc: "deal 2 damage every turn",
 			cost: 5,
-			single_use: false
+			type: "player_turn_end",
+			action: function() {
+				battle.monster.health -= 2;
+				this.status_text = "Your big sword deals 2 damage!";
+			}
 		},
 		{
 			name: "huge sword",
 			desc: "deal 3 damage every turn",
 			cost: 7,
-			single_use: false
+			type: "player_turn_end",
+			action: function() {
+				battle.monster.health -= 3;
+				this.status_text = "Your huge sword deals 3 damage!";
+			}
 		},
 		{
 			name: "truly enormous sword",
 			desc: "deal 4 damage every turn",
 			cost: 9,
-			single_use: false
+			type: "player_turn_end",
+			action: function() {
+				battle.monster.health -= 4;
+				this.status_text = "Your truly enormous sword deals 4 damage!";
+			}
 		}
 	]
 };

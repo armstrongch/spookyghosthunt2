@@ -12,6 +12,7 @@ var game =
 		
 		$('#battleDiv').css('display', state == "battle" ? 'block' : 'none');
 		$('#shopDiv').css('display', state == "shop" ? 'block' : 'none');
+		$('#victoryDiv').css('display', state == "victory" ? 'block' : 'none');
 		
 		switch(state)
 		{
@@ -20,6 +21,9 @@ var game =
 				break;
 			case "battle":
 				battle.setup();
+				break;
+			case "victory":
+				victory.setup();
 				break;
 			default:
 				break;
