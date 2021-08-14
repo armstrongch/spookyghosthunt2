@@ -11,7 +11,7 @@ var battle =
 	{
 		var new_status_text = "";
 		
-		var phases = ["player_turn_end", "monster_turn_end", "battle_end"];
+		var phases = ["player_turn_end", "passive_items", "monster_turn_end", "battle_end"];
 		
 		for (let p = 0; p < phases.length; p += 1)
 		{
@@ -37,6 +37,15 @@ var battle =
 					else
 					{
 						player.items[i].previously_checked = false;
+						if (player.items[i].type == phase)
+						{
+							player.items[i].status_text = "";
+							player.items[i].passive();
+							if (player.items[i].status_text != "")
+							{
+								new_status_text += player.items[i].status_text + "<br/>";
+							}
+						}
 					}
 				}
 			}
@@ -69,15 +78,20 @@ var battle =
 		if (this.monster.attack_damage > 0)
 		{
 			this.monster.has_attacked = true;
+			player.health -= this.monster.attack_damage;
 		}
 		
-		if (this.monster.health > 0)
+		if (player.health <= 0)
 		{
-			this.begin_round();
+			game.set_state("defeat");
+		}
+		else if (this.monster.health <= 0)
+		{
+			game.set_state("victory");
 		}
 		else
 		{
-			game.set_state("victory");
+			this.begin_round();
 		}
 	},
 	begin_round: function()
@@ -124,8 +138,8 @@ var battle =
 		var submission_row = '<tr><td colspan=\'2\'></td><td><button onclick=\'battle.end_turn()\' id=\'submitButton\'>Submit</button></td></tr>';
 		$("#battleTable").find('tbody').append(submission_row);
 		
-		$('#playerStatusP').text(
-			"Your health: " + player.health + " / " + player.max_health);
+		$('#playerStatusP').html(
+			"Your health: " + player.health + " / " + player.max_health + "<br/> Cash: $" + shop.cash);
 	},
 	draw_monster_on_canvas: function()
 	{

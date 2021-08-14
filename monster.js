@@ -56,12 +56,60 @@ var monster_factory =
 	
 	monster_attacks: [
 		{
-			name: "wave",
+			name: "bite",
 			action: function() {
 				//do nothing
-				this.status_text = "The monster waves \"hello\" at you.";
+				this.status_text = "The monster bites you, dealing 2 damage.";
+				battle.monster.attack_damage = 2;
 			},
 			monster_types: ["all"]
-		}
-	]
+		},
+		{
+			name: "curse",
+			action: function() {
+				var pre_cursed = false;
+				for (let i = 0; i < player.items.length; i += 1)
+				{
+					if (player.items[i].name == "curse")
+					{
+						pre_cursed = true;
+						i = player.items.length;
+					}
+				}
+				if (pre_cursed)
+				{
+					this.status_text = "The monster cannot curse you, since you are already cursed!";
+				}
+				else
+				{
+					this.status_text = "The monster curses you! Consider yourself cursed!";
+					player.items.push(resources.clone_object(monster_factory.cursed_item));
+				}
+			},
+			monster_types: ["devil", "ghost", "pumpkin"]
+		},
+	],
+	cursed_item: {
+		name: "curse",
+			desc: "Every time the curse is unused, lose 1 health. Use this item to pay $1 and dispell the curse for good.",
+			cost: 0,
+			type: "player_turn_end",
+			action: function() {
+				if (shop.cash >= 1)
+				{
+					shop.cash -= 1;
+					this.remove_me = true;
+					this.status_text = "Your debt is paid, and the curse is dispelled!";
+				}
+				else
+				{
+					this.status_text = "You do not have enough cash to dispell the curse, and lose 1 health!";
+					player.health -= 1;
+				}
+			},
+			passive: function() {
+				this.status_text = "The curse steals 1 health!";
+				player.health -= 1;
+			}
+	}
 }
